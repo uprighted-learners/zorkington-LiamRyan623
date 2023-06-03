@@ -160,9 +160,9 @@ start()
   }  else if (answer == "exit") {
     console.log("You've taken the safe path of leaving this house, and whatever mysteries it contains.");
     process.exit();
-  } else if (answer != "main room" && answer != "exit") {
+  } else {
     console.log(`You can not do that.`);
-    foyer();
+    foyerRoom();
   };
 
   // each room is attached only to certain rooms using the state machine function, and the async functions. If else determines where to go.
@@ -190,12 +190,16 @@ start()
     } else if (answerMR == "foyer"){
     moveRoom("foyer"); 
     foyerRoom();
-  }else if (answerMR != "left hallway" && answerMR != "foyer" && answerMR != "right hallway" && answerMR != "stairs up" && answerMR != "stairs down"){
+  }else {
       console.log("You can not do that.");
       roomMain();
     }
 
   }
+
+  // After this we mostly have a lot of async functions with await asks. This is to get the directions from the player. If the player types in what they want to do, the computer will recognize whether you can, or can not do that thing.
+
+  // I will enter in some notes when the functions differ.
 
   async function leftHallway() {
     console.log("You're in the left hall. From here you see the left room and the main room. Where would you like to go?");
@@ -208,7 +212,7 @@ start()
     } else if (answerLH == "main room") {
     moveRoom("mainRoom");
     roomMain();
-    } else if (answerLH != "left room" && answerLH != "main room") {
+    } else {
       console.log("You can not do that.");
       leftHallway();
     }
@@ -218,6 +222,7 @@ start()
     let messageLR = "You are in what appears to be an old study. On a side table you find a note with the number 1937 written on it. You can also see the left hall from here. What would you like to do?"
     console.log(messageLR);
 
+    // here the player can grab something and have it put into their inventory array. This function will .push a note into the inventory. It is broken, and you can infinitely push this item if you keep coming back into the room. I didn't have time to make it work properly so I gave it a bandaid of bringing the player to an ALTERNATE room without the note in it.
     let answerLR = await ask ("") 
       if (answerLR == "grab") {
         playerInventory.push("note 1937");
@@ -226,7 +231,7 @@ start()
   } else if (answerLR == "left hall") {
     moveRoom("hallwayLeft");
     leftHallway();
-  } else if (answerLR != "left hall" && answerLR != grab) {
+  } else {
     console.log("You can not do that");
     roomLeft();
   }
@@ -240,7 +245,7 @@ start()
       if (answerLRNI == "left hall") {
     moveRoom("hallwayLeft");
     leftHallway();
-  } else if (answerLRNI != "left hall"){
+  } else {
     console.log("You can not do that");
     roomLeftNoItem();
   }
@@ -258,9 +263,14 @@ async function rightHallway() {
   } else if (answerRH == "main room") {
   moveRoom("mainRoom");
   roomMain();
-  } else if (answerRH != "main room" && answerRH != "left room")
+
+  // These else statements are what I most recently fixed. You used to be able to get the game to crash by entering in a command you weren't able to do. Long story long, the else {} fixed that.
+
+
+  } else {
   console.log("you can not do that");
   rightHallway();
+  }
 };
 
 async function roomRight() {
@@ -271,10 +281,16 @@ async function roomRight() {
   if (answerRR == "right hallway"){
   moveRoom("hallwayRight");
   roomRight();
-  } else if (answerRR != "right hallway")
+  } else {
   console.log("you can not do that");
+
+  // This function brings the player "back" to the room and re reads what the player sees so they can try to enter something they can do again. 
   rightHallway();
+  }
 };
+
+
+// The rest of these functions are the same and as such there isn't another note until line 359.
 
 async function upStairs() {
   console.log("You're at the top of the stairs. You see a door with a key pad on it. Enter the code or leave.");
@@ -287,9 +303,10 @@ async function upStairs() {
   } else if (answerUS == "leave") {
   moveRoom("mainRoom");
   roomMain();
-  } else if (answerUS != "1937" && answerUS != "leave")
+  } else {
   console.log("you can't do that");
   upStairs();
+  }
 };
 
 async function studyRoom() {
@@ -304,9 +321,10 @@ async function studyRoom() {
   playerInventory.push("news paper from 1927");
   console.log(`You now have ${playerInventory} in your inventory.`)
   studyRoomNI();
-  } else if (answerSR != "stairs up" && answerSR != "grab")
+  } else {
   console.log("you can not do that");
   studyRoom();
+  }
 };
 
 async function studyRoomNI() {
@@ -317,9 +335,10 @@ async function studyRoomNI() {
   if (answerSRNI == "stairs up"){
   moveRoom("stairsUp");
   upStairs();
-  } else if (answerSRNI != "stairs up")
+  } else {
   console.log("you can not do that");
   studyRoomNI();
+  }
 };
 
 async function downStairs() {
@@ -333,10 +352,15 @@ async function downStairs() {
   } else if (answerSD == "leave") {
   moveRoom("mainRoom");
   roomMain();
-  } else if (answerSD != "1927" && answerSD != "leave");
+  } else {
   console.log("You can not do that.");
   downStairs();
+  }
 };
+
+
+// This is the end function of the game. The player can either leave the house or they can choose to continue down the path set to them by their uncle. If they do that... The ending is a bit more ambiguous.
+
 
 async function basementRoom() {
   console.log("You have successfully opened the door at the bottom of the stairs. The room is made entirely of stone, and is strangely lit by by sconces burning with a green blue flame even though the house has been empty for decades. The only other contents of the room are a table, and lone book set in the center of a large brass ring set in the floor. The sense of dread that permeated through the door is even stronger now, but you are inexplicably drawn to the tome. Against your better judgement you pickup the tome, and for some reason you KNOW that it is bound in human flesh. Upon opening the tome you find a handwritten note from your uncle. It reads, 'My dearest nephew, this is the Necronomicon, written long ago by the Mad Warlock Abdul Alhazred. Within it lie the very secrets of the universe, and the beings that have shaped it since time immemorial. I only hope that you are stronger of mind than I was. I was unable to view the contents and keep my sanity. Best of luck, Uncle Howard.' You want to drop the book and leave this madness behind, but almost of their own volition your hands begin to turn the page...");
